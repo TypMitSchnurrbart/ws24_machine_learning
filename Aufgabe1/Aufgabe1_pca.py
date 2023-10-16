@@ -5,7 +5,9 @@
 #===== IMPORTS =======================================
 import json
 import csv
-import numpy
+import numpy as np
+import pandas as pd
+import math
 
 #===== FUNCTIONS =====================================
 def pca():
@@ -16,45 +18,33 @@ def pca():
 #===== MAIN ==========================================
 if __name__ == "__main__":
 
-    # Data Init
-    data = []
-
     # Import data
-    with open("boston.csv", "r") as file:
-        boston_data = csv.DictReader(file)
+    data = pd.read_csv("boston.csv")
 
-        for line in boston_data:
+    data.drop("TGT", axis=1, inplace=True)
+    data.drop("Index", axis=1, inplace=True)
 
-            data.append([])
-            
-            for key in line:
-                data[-1].append(float(line[key]))
+    # Center and normalize variance
+    for entry in data:
+        variance = data[entry].var()
+        data[entry] -= data[entry].mean()
+        data[entry] /= math.sqrt(variance)
 
+    # Display head
+    print(data.head())
 
-    # Compute mean tensor
-    mean_tensor = [0]
-    var_index = 0
-    for attrb in range(0,len(data[-1])-1):
+    # Creating the design matrix
+    print(f"Creating design matrix {len(data)}x{len(data.columns)}")
+    design_matrix = np.empty((len(data), len(data.columns)))
+    design_matrix[:, :len(data.columns)] = data.values
 
-        mean_cache = 0
-        var_index += 1
-        for index, line in enumerate(data):
-            mean_cache += line[var_index]
+    # Compute svd
+    test = np.linalg.svd(design_matrix)
 
-        mean_tensor.append(mean_cache / len(data))
+    print(test)
+
 
     
-    # Compute the centering for every data point
-    var_index = 1
-    for attrb in range(0,len(data[-1])-1):
-
-        for index, line in enumerate(data):
-            data[index][var_index] -= mean_tensor[var_index]
-
-        var_index += 1
-
-    print(data)
-        
     
 
         
