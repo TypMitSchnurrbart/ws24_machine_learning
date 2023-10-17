@@ -8,6 +8,7 @@ import csv
 import numpy as np
 import pandas as pd
 import math
+import matplotlib.pyplot as plt
 
 #===== FUNCTIONS =====================================
 def pca():
@@ -30,21 +31,42 @@ if __name__ == "__main__":
         data[entry] -= data[entry].mean()
         data[entry] /= math.sqrt(variance)
 
-    # Display head
-    print(data.head())
-
     # Creating the design matrix
     print(f"Creating design matrix {len(data)}x{len(data.columns)}")
     design_matrix = np.empty((len(data), len(data.columns)))
     design_matrix[:, :len(data.columns)] = data.values
 
     # Compute svd
-    test = np.linalg.svd(design_matrix)
+    U, D, V = np.linalg.svd(design_matrix)
 
-    print(test)
+    # Change D so that it holds the Eigenvalues of the Covmatrix
+    # The Change is needed because through svd we only get the deviation in not normalized
+    # Those Eigenvalues represent the new variances of the transformed data
+    # therefore D is the new Covariance Matrix, because the transformed data
+    # is uncorrelated
+    # The eigenvalues are ordered by greatness. So biggest eigenvalue is at (0, 0)
+    new_cov_matrix = D**2 / (len(data)-1)
+    eigenvectors = V.T
 
+    # Compute defined variance and cumulative
+    l = len(new_cov_matrix)
+    defined_variance = new_cov_matrix[:l]/np.sum(new_cov_matrix)
+    cumulative_variance = np.cumsum(defined_variance)
 
-    
-    
+    output_variance = pd.DataFrame({
+        "D" : new_cov_matrix,
+        "Erklärte Varianz" : defined_variance,
+        "Kumulierte erklärte Varianz" : cumulative_variance
+    })
 
-        
+    print(f"{output_variance}\n\n")
+
+    # Transform the data
+    scores = np.dot(design_matrix, eigenvectors[:3].T)
+    scores = pd.DataFrame(scores, columns=["X", "Y", "Z"])
+
+    # Show the Scatter Plot
+    scores.drop("Z", axis=1, inplace=True)
+    scores.plot.scatter(x='X', y='Y')
+    plt.title("Transformed Data Scatter")
+    plt.show()
