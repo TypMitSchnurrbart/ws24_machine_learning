@@ -22,6 +22,8 @@ if __name__ == "__main__":
     # Import data
     data = pd.read_csv("boston.csv")
 
+    prices = data["TGT"]
+
     data.drop("TGT", axis=1, inplace=True)
     data.drop("Index", axis=1, inplace=True)
 
@@ -46,7 +48,7 @@ if __name__ == "__main__":
     # is uncorrelated
     # The eigenvalues are ordered by greatness. So biggest eigenvalue is at (0, 0)
     new_cov_matrix = D**2 / (len(data)-1)
-    eigenvectors = V.T
+    eigenvectors = V
 
     # Compute defined variance and cumulative
     l = len(new_cov_matrix)
@@ -65,8 +67,26 @@ if __name__ == "__main__":
     scores = np.dot(design_matrix, eigenvectors[:3].T)
     scores = pd.DataFrame(scores, columns=["X", "Y", "Z"])
 
+
+    # Compute correlation matrix with the original data
+    combination = np.hstack((scores, design_matrix))
+    multi_cov = np.corrcoef(combination, rowvar=False)
+    print(f"Korelationsmatrix mit ursprünglichen Daten:\n{multi_cov}\n\n")
+
+
     # Show the Scatter Plot
     scores.drop("Z", axis=1, inplace=True)
-    scores.plot.scatter(x='X', y='Y')
+
+    # Split according to price
+    scores = scores.join(prices)
+    lower = scores[scores["TGT"] < prices.median()]
+    higher = scores[scores["TGT"] >= prices.median()]
+
+    lower.drop("TGT", axis=1, inplace=True)
+    higher.drop("TGT", axis=1, inplace=True)
+
+    plt.scatter(lower["X"], lower["Y"], label="Lower than Median", color="red")
+    plt.scatter(higher["X"], higher["Y"], label="Higher or equal than Median", color="green")
+    plt.legend()
     plt.title("Transformed Data Scatter")
     plt.show()
