@@ -2,19 +2,13 @@
     Test module
 """
 
-#===== IMPORTS =======================================
+# ===== IMPORTS =======================================
 import numpy
 import pandas as pd
 import json
 import matplotlib.pyplot as plt
 
-#===== FUNCTIONS =====================================
-def hka():
-
-    return
-
-
-#===== MAIN ==========================================
+# ===== MAIN ==========================================
 if __name__ == "__main__":
 
     # Part One
@@ -24,10 +18,10 @@ if __name__ == "__main__":
 
     ## Create Dataframe with Indexs
     data = {
-        "food_description" : [],
-        "food_group" : [],
-        "id" : [],
-        "manufacturer" : []
+        "food_description": [],
+        "food_group": [],
+        "id": [],
+        "manufacturer": []
     }
 
     for food in food_data:
@@ -38,17 +32,16 @@ if __name__ == "__main__":
 
     info = pd.DataFrame(data, columns=["food_description", "food_group", "id", "manufacturer"])
 
-
     ## Create Array of dataframes with nutrient list
     food_nutrients = []
 
     for food in food_data:
 
         nu_cache = {
-        "description" : [],
-        "group" : [],
-        "units" : [],
-        "value" : []
+            "description": [],
+            "group": [],
+            "units": [],
+            "value": []
         }
 
         for nutrient in food["nutrients"]:
@@ -60,7 +53,6 @@ if __name__ == "__main__":
         element = pd.DataFrame(nu_cache, columns=["description", "group", "units", "value"])
         element["id"] = food["id"]
         food_nutrients.append(element)
-
 
     ## Concat the both
     nutrients = pd.concat(food_nutrients)
@@ -88,12 +80,9 @@ if __name__ == "__main__":
     print("\n\nFood with max Zinc value:")
     print(max_entry)
 
-
     ## Create Hist
     zink_data["value"].hist(bins=len(zink_data["value"]))
     plt.xlabel('Zinc value [mg]')
     plt.ylabel('Frequency')
     plt.title('Histogram of zinc value in food')
     plt.show()
-
-

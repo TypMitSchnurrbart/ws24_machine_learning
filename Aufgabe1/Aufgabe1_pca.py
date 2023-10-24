@@ -2,21 +2,13 @@
     Test module
 """
 
-#===== IMPORTS =======================================
-import json
-import csv
-import numpy as np
-import pandas as pd
+# ===== IMPORTS =======================================
 import math
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
-#===== FUNCTIONS =====================================
-def pca():
-
-    return
-
-
-#===== MAIN ==========================================
+# ===== MAIN ==========================================
 if __name__ == "__main__":
 
     # Import data
@@ -47,18 +39,18 @@ if __name__ == "__main__":
     # therefore D is the new Covariance Matrix, because the transformed data
     # is uncorrelated
     # The eigenvalues are ordered by greatness. So biggest eigenvalue is at (0, 0)
-    new_cov_matrix = D**2 / (len(data)-1)
+    new_cov_matrix = D ** 2 / (len(data) - 1)
     eigenvectors = V
 
     # Compute defined variance and cumulative
     l = len(new_cov_matrix)
-    defined_variance = new_cov_matrix[:l]/np.sum(new_cov_matrix)
+    defined_variance = new_cov_matrix[:l] / np.sum(new_cov_matrix)
     cumulative_variance = np.cumsum(defined_variance)
 
     output_variance = pd.DataFrame({
-        "D" : new_cov_matrix,
-        "Erklärte Varianz" : defined_variance,
-        "Kumulierte erklärte Varianz" : cumulative_variance
+        "D": new_cov_matrix,
+        "Erklärte Varianz": defined_variance,
+        "Kumulierte erklärte Varianz": cumulative_variance
     })
 
     print(f"{output_variance}\n\n")
@@ -67,12 +59,10 @@ if __name__ == "__main__":
     scores = np.dot(design_matrix, eigenvectors[:3].T)
     scores = pd.DataFrame(scores, columns=["X", "Y", "Z"])
 
-
     # Compute correlation matrix with the original data
     combination = np.hstack((scores, design_matrix))
     multi_cov = np.corrcoef(combination, rowvar=False)
     print(f"Korelationsmatrix mit ursprünglichen Daten:\n{multi_cov}\n\n")
-
 
     # Show the Scatter Plot
     scores.drop("Z", axis=1, inplace=True)
