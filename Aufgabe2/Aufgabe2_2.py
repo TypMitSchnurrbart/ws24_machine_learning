@@ -74,11 +74,12 @@ if __name__ == "__main__":
     eigenvectors = V
 
     # Display the first 150 eigenvalues
+    D = D ** 2 / 1023
     plt.plot(D[:150])
     plt.title("Eigenvalues of Faces")
     plt.xlabel("Order")
     plt.ylabel("Eigenvalues")
-    #plt.show()
+    plt.show()
 
     # Show the first 12 eigenfaces
     eigenfaces = eigenvectors[:12]
@@ -88,7 +89,7 @@ if __name__ == "__main__":
         plt.imshow(image, cmap='gray')  # 'gray' colormap for grayscale images
         plt.title(f"Eigenface {index}")
         plt.axis('off')  # Turn off axis labels
-        #plt.show()
+        plt.show()
 
     # Transform the data to the first 7 eigenfaces
     scores = np.dot(design_matrix, eigenvectors[:7].T)

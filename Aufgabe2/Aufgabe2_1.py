@@ -25,6 +25,15 @@ data = {
     "child" : [],
 }
 
+
+test_data = {
+    "intercept" : [],
+    "livebait" : [],
+    "camper" : [],
+    "persons" : [],
+    "child" : [],
+}
+
 for value in Xt:
 
     data["intercept"].append(1.0)
@@ -33,7 +42,16 @@ for value in Xt:
     data["persons"].append(value[2])
     data["child"].append(value[3])
 
+for value in Xte:
+
+    test_data["intercept"].append(1.0)
+    test_data["livebait"].append(value[0])
+    test_data["camper"].append(value[1])
+    test_data["persons"].append(value[2])
+    test_data["child"].append(value[3])
+
 data = pd.DataFrame(data)
+test_data = pd.DataFrame(test_data)
 
 # Calculate the weights by hand, solve W = (X.T * X)**-1 * X.T * y
 XT_inverse = inv(np.dot(data.T, data))
@@ -51,11 +69,13 @@ model = LinearRegression(fit_intercept=False).fit(X, Y)
 print(f"Solution with SkLearn:\n{model.coef_}\n\n")
 
 # Compute RMSE / variance / NLL 
-pred_fish = np.matmul(data, weights)
+pred_fish = np.matmul(test_data, weights)
 
-RMSE = np.sqrt(np.mean((true_fish - pred_fish)**2))
-variance = np.mean((true_fish - pred_fish)**2)
-NLL = 0.5 * np.log(2 * np.pi * variance) + 0.5 * np.mean((true_fish - pred_fish)**2) / variance
+RMSE = np.sqrt(np.mean((test_fish - pred_fish)**2))
+variance = np.mean((test_fish - pred_fish)**2)
+
+# NLL based on Gaussian
+NLL = 0.5 * np.log(2 * np.pi * variance) + 0.5 * np.mean((test_fish - pred_fish)**2) / variance
 print(f"RMSE:\t\t{RMSE}\nVariance:\t{variance}\nNLL:\t\t{NLL}\n")
 
 
