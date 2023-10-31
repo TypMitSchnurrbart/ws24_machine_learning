@@ -108,6 +108,8 @@ if __name__ == "__main__":
 
         for index, ref_pic in scores.iterrows():
 
+            ref_pic = ref_pic.values
+
             distance = np.linalg.norm(test_pic - ref_pic)
 
             if distance < min_distance or min_distance < 0:

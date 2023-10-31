@@ -8,6 +8,14 @@ from numpy.linalg import inv
 import pandas as pd
 import math
 
+def poisson_pmf(mu, k):
+    return np.exp(-mu) * (mu**k) / factorial(k)
+
+def poisson_nll(beta, X, y):
+    mu = np.exp(np.dot(X, beta))
+    return -np.sum(mu - y * np.log(mu))
+
+
 
 #===== MAIN ==========================================
 d = np.load('fishing.npz')
@@ -93,5 +101,30 @@ Mean Pred:\t{mean_pred}
 97.5%-tile\t{percentile975}\n
 Gaussian not suited because negative values possible!\n""")
 
+### UNTIL HERE IS CORRECT AND WORKING
 
-# Now with Poisson Distribution
+# TODO:
+# Now with Poisson Distribution and Gradient Descent
+beta = np.ones(data.shape[1])
+learning_rate = 0.001
+num_epochs = 5000
+
+for epoch in range(num_epochs):
+    mu = np.exp(np.dot(data, beta))
+    gradient = np.dot(data.T, true_fish - mu)
+    beta += learning_rate * gradient  
+
+print(gradient)
+
+pred_values = np.dot(test_data, beta)
+
+# Calculate Root Mean Square Error (RMSE) on the test set
+RMSE = np.sqrt(np.mean((pred_values - test_fish) ** 2))
+
+# Calculate the NLL on the test set
+NLL = poisson_nll(beta, test_data, test_fish)
+
+print(f"With Gradient Descent and Poisson:\nRMSE:\t\t{RMSE}\nNLL:\t\t{NLL}\n")
+ 
+
+
