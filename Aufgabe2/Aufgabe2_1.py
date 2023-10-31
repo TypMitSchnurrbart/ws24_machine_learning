@@ -51,12 +51,12 @@ model = LinearRegression(fit_intercept=False).fit(X, Y)
 print(f"Solution with SkLearn:\n{model.coef_}\n\n")
 
 # Compute RMSE / variance / NLL 
-pred_fish = np.dot(data, weights)
+pred_fish = np.matmul(data, weights)
 
 RMSE = np.sqrt(np.mean((true_fish - pred_fish)**2))
 variance = np.mean((true_fish - pred_fish)**2)
 NLL = 0.5 * np.log(2 * np.pi * variance) + 0.5 * np.mean((true_fish - pred_fish)**2) / variance
-print(f"RMSE:\t{RMSE}\nVariance:\t{variance}\nNLL:\t{NLL}\n")
+print(f"RMSE:\t\t{RMSE}\nVariance:\t{variance}\nNLL:\t\t{NLL}\n")
 
 
 # Compute mean of pred and real
@@ -74,5 +74,4 @@ Mean Pred:\t{mean_pred}
 Gaussian not suited because negative values possible!\n""")
 
 
-# 
-
+# Now with Poisson Distribution
