@@ -40,6 +40,8 @@ if __name__ == "__main__":
     for celeb in celeb_list:
         for index, pic in enumerate(os.listdir(f"{pic_data}/{celeb}")):
 
+                print(celeb)
+
                 # Read in the picture
                 image = io.imread(f"{pic_data}/{celeb}/{pic}", as_gray = True)
                 image = transform.resize(image, (32, 32), anti_aliasing=True)
@@ -60,6 +62,8 @@ if __name__ == "__main__":
     test = pd.DataFrame(test_pics["data"])
 
     print(design_matrix)
+
+    exit()
 
     # Perform PCA 
     # Center and normalize variance
