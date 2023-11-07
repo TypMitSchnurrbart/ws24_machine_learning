@@ -73,15 +73,16 @@ if __name__ == "__main__":
         design_matrix[entry] -= design_matrix[entry].mean()
         design_matrix[entry] /= math.sqrt(variance)
 
-        # TODO
-        test_data[entry] -= design_matrix[entry].mean()
+    # TODO Check if test data should be centered by itself
+    for entry in test_data:
+        variance = test_data[entry].var()
+        test_data[entry] -= test_data[entry].mean()
         test_data[entry] /= math.sqrt(variance)
 
     # SVD
-    # TODO desing_matrix[1:]
+    # TODO was desing_matrix[1:] before?!
     U, D, V = np.linalg.svd(design_matrix)
     eigenvectors = V
-    eigenfaces = eigenvectors[:7]
 
     # Transform the data to the first 7 eigenfaces
     scores = pd.DataFrame(np.dot(design_matrix, eigenvectors[:7].T))
@@ -105,6 +106,10 @@ if __name__ == "__main__":
     bush_scores = scores.loc[scores["labels"] == 1.0]
     not_bush_scores = scores.loc[scores["labels"] == -1.0]
 
+    # Remove label from scores
+    bush_scores = bush_scores.drop(columns=["labels"])
+    not_bush_scores = not_bush_scores.drop(columns=["labels"])
+
     for entry in bush_scores:
         bush["mean"].append(bush_scores[entry].mean())
         bush["variance"].append(bush_scores[entry].var())
@@ -116,15 +121,18 @@ if __name__ == "__main__":
     bush = pd.DataFrame(bush)
     not_bush = pd.DataFrame(not_bush)
 
+    print(bush)
+    print("\n")
+    print(not_bush)
 
     # Compute the A-Priori of train data
-    p_is_bush = design_labels.count(1) / len(design_labels)
+    p_is_bush = design_labels.count(1.0) / len(design_labels)
     p_not_bush = 1 - p_is_bush
 
 
     # Calculate the Gaussian probability values for each feature and class
     # Check for test data
-    print("\nChecking results on TEST data:\n")
+    print("\nChecking results on TEST data:")
     true_positive = 0
     false_positive = 0
     true_negativ = 0
@@ -147,33 +155,30 @@ if __name__ == "__main__":
             variance = bush["variance"][index]
             not_variance = not_bush["variance"][index]
 
-            pdfs["P_not"].append((1 / (math.sqrt(2 * math.pi * not_variance))) * math.exp(-(value - not_mean)**2 / (2 * not_variance)))
-            pdfs["P_bush"].append((1 / (math.sqrt(2 * math.pi * variance))) * math.exp(-(value - mean)**2 / (2 * variance)))
+            pdfs["P_not"].append(math.log((1 / (math.sqrt(2 * math.pi * not_variance))) * math.exp(-(value - not_mean)**2 / (2 * not_variance))))
+            pdfs["P_bush"].append(math.log((1 / (math.sqrt(2 * math.pi * variance))) * math.exp(-(value - mean)**2 / (2 * variance))))
         
 
         # Now we got the pdfs P(x | c), probability of feature x under class c
-        # Now look at decision
-        prd_bush = 1
+        # use the log() and sum to be numerically more stable
+        prd_bush = 0
         for pdf in pdfs["P_bush"]:
-            prd_bush *= (pdf * p_is_bush)
+            prd_bush += (pdf * p_is_bush)
 
-        prd_not_bush = 1
+        prd_not_bush = 0
         for pdf in pdfs["P_not"]:
-            prd_not_bush *= (pdf * p_not_bush)
+            prd_not_bush += (pdf * p_not_bush)
 
         # Bush detected
-        print(f"{prd_bush} ?= {prd_not_bush}")
         if prd_bush > prd_not_bush:
-
-            if test_labels[ind] == 1:
+            if test_labels[ind] == 1.0:
                 true_positive += 1
             else:
                 false_positive += 1
         
         # Not bush detected
         else:
-            
-            if test_labels[ind] == 1:
+            if test_labels[ind] == 1.0:
                 false_negativ += 1
             else:
                 true_negativ += 1
