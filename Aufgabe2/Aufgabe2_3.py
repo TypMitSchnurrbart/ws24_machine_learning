@@ -80,13 +80,15 @@ if __name__ == "__main__":
         test_data[entry] /= math.sqrt(variance)
 
     # SVD
-    # TODO was desing_matrix[1:] before?!
+    # TODO Different PCA for different data?
     U, D, V = np.linalg.svd(design_matrix)
-    eigenvectors = V
+    eigenvectors_train = V
 
     # Transform the data to the first 7 eigenfaces
-    scores = pd.DataFrame(np.dot(design_matrix, eigenvectors[:7].T))
-    test_scores = pd.DataFrame(np.dot(test_data, eigenvectors[:7].T))
+    scores = pd.DataFrame(np.dot(design_matrix, eigenvectors_train[:7].T))
+
+    U, D, V = np.linalg.svd(test_data)
+    test_scores = pd.DataFrame(np.dot(test_data, V[:7].T))
 
 
     ### Bayes Classificator
@@ -169,7 +171,7 @@ if __name__ == "__main__":
         for pdf in pdfs["P_not"]:
             prd_not_bush += (pdf * p_not_bush)
 
-        # Bush detected
+        # Bush detectedb
         if prd_bush > prd_not_bush:
             if test_labels[ind] == 1.0:
                 true_positive += 1
