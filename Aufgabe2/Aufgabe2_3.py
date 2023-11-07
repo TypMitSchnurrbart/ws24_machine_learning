@@ -71,12 +71,15 @@ if __name__ == "__main__":
     for entry in design_matrix:
         variance = design_matrix[entry].var()
         design_matrix[entry] -= design_matrix[entry].mean()
-        test_data[entry] -= design_matrix[entry].mean()
         design_matrix[entry] /= math.sqrt(variance)
+
+        # TODO
+        test_data[entry] -= design_matrix[entry].mean()
         test_data[entry] /= math.sqrt(variance)
 
     # SVD
-    U, D, V = np.linalg.svd(design_matrix[1:])
+    # TODO desing_matrix[1:]
+    U, D, V = np.linalg.svd(design_matrix)
     eigenvectors = V
     eigenfaces = eigenvectors[:7]
 
@@ -120,13 +123,22 @@ if __name__ == "__main__":
 
 
     # Calculate the Gaussian probability values for each feature and class
+    # Check for test data
+    print("\nChecking results on TEST data:\n")
+    true_positive = 0
+    false_positive = 0
+    true_negativ = 0
+    false_negativ = 0
+    dates = 0
     for ind, test_score in test_scores.iterrows():
 
+        dates += 1
         pdfs = {
             "P_bush" : [],
             "P_not" : []
         }
 
+        # Compute alle the PDFs for this test scores for every 
         for index, value in enumerate(test_score.values):
 
             mean = bush["mean"][index]
@@ -149,15 +161,26 @@ if __name__ == "__main__":
         for pdf in pdfs["P_not"]:
             prd_not_bush *= (pdf * p_not_bush)
 
-        # Make the decision
-        print(f"{round(prd_bush,7)} ?= {round(prd_not_bush,7)}")
+        # Bush detected
+        print(f"{prd_bush} ?= {prd_not_bush}")
         if prd_bush > prd_not_bush:
-            print(f"Got Bush! Real value: {test_labels[ind]}")
-        else:
-            print(f"NOT Bush! Real value: {test_labels[ind]}")
 
-        print("\n")
-
-
-
+            if test_labels[ind] == 1:
+                true_positive += 1
+            else:
+                false_positive += 1
         
+        # Not bush detected
+        else:
+            
+            if test_labels[ind] == 1:
+                false_negativ += 1
+            else:
+                true_negativ += 1
+        
+    print(f"""
+    True Positive:\t{true_positive/dates}
+    False Positive:\t{false_positive/dates}
+    False Negativ:\t{false_negativ/dates}
+    True Negativ:\t{true_negativ/dates}
+    """)
