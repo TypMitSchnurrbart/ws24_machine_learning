@@ -71,18 +71,24 @@ if __name__ == "__main__":
     for entry in design_matrix:
         variance = design_matrix[entry].var()
         design_matrix[entry] -= design_matrix[entry].mean()
-        test_data[entry] -= design_matrix[entry].mean()
         design_matrix[entry] /= math.sqrt(variance)
+
+    # TODO Check if test data should be centered by itself
+    for entry in test_data:
+        variance = test_data[entry].var()
+        test_data[entry] -= test_data[entry].mean()
         test_data[entry] /= math.sqrt(variance)
 
     # SVD
-    U, D, V = np.linalg.svd(design_matrix[1:])
-    eigenvectors = V
-    eigenfaces = eigenvectors[:7]
+    # TODO Different PCA for different data?
+    U, D, V = np.linalg.svd(design_matrix)
+    eigenvectors_train = V
 
     # Transform the data to the first 7 eigenfaces
-    scores = pd.DataFrame(np.dot(design_matrix, eigenvectors[:7].T))
-    test_scores = pd.DataFrame(np.dot(test_data, eigenvectors[:7].T))
+    scores = pd.DataFrame(np.dot(design_matrix, eigenvectors_train[:7].T))
+
+    U, D, V = np.linalg.svd(test_data)
+    test_scores = pd.DataFrame(np.dot(test_data, V[:7].T))
 
 
     ### Bayes Classificator
@@ -102,6 +108,10 @@ if __name__ == "__main__":
     bush_scores = scores.loc[scores["labels"] == 1.0]
     not_bush_scores = scores.loc[scores["labels"] == -1.0]
 
+    # Remove label from scores
+    bush_scores = bush_scores.drop(columns=["labels"])
+    not_bush_scores = not_bush_scores.drop(columns=["labels"])
+
     for entry in bush_scores:
         bush["mean"].append(bush_scores[entry].mean())
         bush["variance"].append(bush_scores[entry].var())
@@ -113,20 +123,32 @@ if __name__ == "__main__":
     bush = pd.DataFrame(bush)
     not_bush = pd.DataFrame(not_bush)
 
+    print(bush)
+    print("\n")
+    print(not_bush)
 
     # Compute the A-Priori of train data
-    p_is_bush = design_labels.count(1) / len(design_labels)
+    p_is_bush = design_labels.count(1.0) / len(design_labels)
     p_not_bush = 1 - p_is_bush
 
 
     # Calculate the Gaussian probability values for each feature and class
+    # Check for test data
+    print("\nChecking results on TEST data:")
+    true_positive = 0
+    false_positive = 0
+    true_negativ = 0
+    false_negativ = 0
+    dates = 0
     for ind, test_score in test_scores.iterrows():
 
+        dates += 1
         pdfs = {
             "P_bush" : [],
             "P_not" : []
         }
 
+        # Compute alle the PDFs for this test scores for every 
         for index, value in enumerate(test_score.values):
 
             mean = bush["mean"][index]
@@ -135,29 +157,37 @@ if __name__ == "__main__":
             variance = bush["variance"][index]
             not_variance = not_bush["variance"][index]
 
-            pdfs["P_not"].append((1 / (math.sqrt(2 * math.pi * not_variance))) * math.exp(-(value - not_mean)**2 / (2 * not_variance)))
-            pdfs["P_bush"].append((1 / (math.sqrt(2 * math.pi * variance))) * math.exp(-(value - mean)**2 / (2 * variance)))
+            pdfs["P_not"].append(math.log((1 / (math.sqrt(2 * math.pi * not_variance))) * math.exp(-(value - not_mean)**2 / (2 * not_variance))))
+            pdfs["P_bush"].append(math.log((1 / (math.sqrt(2 * math.pi * variance))) * math.exp(-(value - mean)**2 / (2 * variance))))
         
 
         # Now we got the pdfs P(x | c), probability of feature x under class c
-        # Now look at decision
-        prd_bush = 1
+        # use the log() and sum to be numerically more stable
+        prd_bush = 0
         for pdf in pdfs["P_bush"]:
-            prd_bush *= (pdf * p_is_bush)
+            prd_bush += (pdf * p_is_bush)
 
-        prd_not_bush = 1
+        prd_not_bush = 0
         for pdf in pdfs["P_not"]:
-            prd_not_bush *= (pdf * p_not_bush)
+            prd_not_bush += (pdf * p_not_bush)
 
-        # Make the decision
-        print(f"{round(prd_bush,7)} ?= {round(prd_not_bush,7)}")
+        # Bush detectedb
         if prd_bush > prd_not_bush:
-            print(f"Got Bush! Real value: {test_labels[ind]}")
-        else:
-            print(f"NOT Bush! Real value: {test_labels[ind]}")
-
-        print("\n")
-
-
-
+            if test_labels[ind] == 1.0:
+                true_positive += 1
+            else:
+                false_positive += 1
         
+        # Not bush detected
+        else:
+            if test_labels[ind] == 1.0:
+                false_negativ += 1
+            else:
+                true_negativ += 1
+        
+    print(f"""
+    True Positive:\t{true_positive/dates}
+    False Positive:\t{false_positive/dates}
+    False Negativ:\t{false_negativ/dates}
+    True Negativ:\t{true_negativ/dates}
+    """)
