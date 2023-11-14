@@ -157,22 +157,22 @@ if __name__ == "__main__":
             variance = bush["variance"][index]
             not_variance = not_bush["variance"][index]
 
-            pdfs["P_not"].append(math.log((1 / (math.sqrt(2 * math.pi * not_variance))) * math.exp(-(value - not_mean)**2 / (2 * not_variance))))
-            pdfs["P_bush"].append(math.log((1 / (math.sqrt(2 * math.pi * variance))) * math.exp(-(value - mean)**2 / (2 * variance))))
+            pdfs["P_not"].append((1 / (math.sqrt(2 * math.pi * not_variance))) * math.exp(-(value - not_mean)**2 / (2 * not_variance)))
+            pdfs["P_bush"].append((1 / (math.sqrt(2 * math.pi * variance))) * math.exp(-(value - mean)**2 / (2 * variance)))
         
 
         # Now we got the pdfs P(x | c), probability of feature x under class c
         # use the log() and sum to be numerically more stable
-        prd_bush = 0
+        prd_bush = 1
         for pdf in pdfs["P_bush"]:
-            prd_bush += (pdf * p_is_bush)
+            prd_bush *= pdf
 
-        prd_not_bush = 0
+        prd_not_bush = 1
         for pdf in pdfs["P_not"]:
-            prd_not_bush += (pdf * p_not_bush)
+            prd_not_bush *= pdf
 
         # Bush detectedb
-        if prd_bush > prd_not_bush:
+        if prd_bush*p_is_bush > prd_not_bush*p_not_bush:
             if test_labels[ind] == 1.0:
                 true_positive += 1
             else:
