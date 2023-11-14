@@ -7,6 +7,7 @@
 import numpy as np
 import sklearn
 import random
+import math
 from sklearn import datasets
 from sklearn import model_selection
 import matplotlib.pyplot as plt
@@ -20,7 +21,7 @@ if __name__ == "__main__":
     digits = datasets.load_digits()
 
 
-    ### 3.2
+    ### 3.2a
     for i in range(0, 3):
 
         train_data, test_data, train_label, test_label = model_selection.train_test_split(digits.data, digits.target, test_size=0.25)
@@ -34,6 +35,18 @@ if __name__ == "__main__":
         """)
 
     
+    ### 3.2b
+    SVM = svm.SVC(C=100.0, gamma=0.001, kernel="rbf")
+    scores = model_selection.cross_val_score(estimator=SVM,
+                                            X=train_data,
+                                            y=train_label,
+                                            cv=10)
+    print(f"""
+    Cross Validation Scores:
+    Kreuzvalidierungsgenauigkeit:\t{round(scores.mean(), 3)}
+    Standardabweichung:\t\t\t{round(math.sqrt(scores.var()), 3)}
+    """)
+
 
 
 
