@@ -21,7 +21,7 @@ if __name__ == "__main__":
     digits = datasets.load_digits()
 
 
-    ### 3.2a
+    ### 3.2a)
     for i in range(0, 3):
 
         train_data, test_data, train_label, test_label = model_selection.train_test_split(digits.data, digits.target, test_size=0.25)
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         """)
 
     
-    ### 3.2b
+    ### 3.2b)
     SVM = svm.SVC(C=100.0, gamma=0.001, kernel="rbf")
     scores = model_selection.cross_val_score(estimator=SVM,
                                             X=train_data,
@@ -46,6 +46,62 @@ if __name__ == "__main__":
     Kreuzvalidierungsgenauigkeit:\t{round(scores.mean(), 3)}
     Standardabweichung:\t\t\t{round(math.sqrt(scores.var()), 3)}
     """)
+
+    ### 3.2c)
+    # TODO maybe the graphs are a bit off, gotta ask
+
+    # Try to find best gamma
+    gammas = np.logspace(-7, -1, 10)
+    gammas = np.around(gammas, 7)
+    results_train = []
+    results_test = []
+    for split in range(0, 5):
+
+        train_data, test_data, train_label, test_label = model_selection.train_test_split(digits.data, digits.target, train_size=500, test_size=500)
+        results_train.append([])
+        results_test.append([])
+
+        for gamma in gammas:
+
+            SVM = svm.SVC(C=10.0, gamma=gamma, kernel="rbf")
+            SVM.fit(train_data, train_label)
+
+            results_train[-1].append(SVM.score(train_data, train_label))
+            results_test[-1].append(SVM.score(test_data, test_label))
+
+
+    # Plot the results for train
+    for index, split in enumerate(results_train):
+        plt.plot(gammas, split)
+    plt.legend(gammas)
+    plt.show()
+
+    # Plot the results for train
+    for index, split in enumerate(results_test):
+        plt.plot(gammas, split)
+    plt.legend(gammas)
+    plt.show()
+
+
+    ### 3.2d)
+    svc_params = {
+    'C': np.logspace(-1, 2, 4),
+    'gamma': np.logspace(-4, 0, 5), 
+    }
+
+    train_data, test_data, train_label, test_label = model_selection.train_test_split(digits.data, digits.target, train_size=500)
+
+    SVM = svm.SVC(C=10.0, gamma=0.1, kernel="rbf")
+    model = model_selection.GridSearchCV(param_grid=svc_params, cv=3, estimator=SVM).fit(train_data, train_label)
+
+    print(f"""
+    Best Params:\t{model.best_params_}
+    Best Score:\t\t{model.best_score_}
+    Score on Test data:\t{model.score(test_data, test_label)}
+    """)
+
+    if input("Want detailed results? [y/N]\t") == "y" : print(f"\n{model.cv_results_}")
+
 
 
 
