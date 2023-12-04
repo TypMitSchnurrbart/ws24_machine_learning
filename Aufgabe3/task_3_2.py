@@ -48,7 +48,8 @@ if __name__ == "__main__":
     """)
 
     ### 3.2c)
-    # TODO maybe the graphs are a bit off, gotta ask
+    # Cross Validation is the progress of splitting into n set and then train n times
+    # always with n-1 train sets and one test set for all permutations! 
 
     # Try to find best gamma
     gammas = np.logspace(-7, -1, 10)
@@ -71,15 +72,17 @@ if __name__ == "__main__":
 
 
     # Plot the results for train
+    plt.xscale("log")
     for index, split in enumerate(results_train):
         plt.plot(gammas, split)
     plt.legend(gammas)
     plt.show()
 
-    # Plot the results for train
+    # Plot the results for test
+    plt.xscale("log")
     for index, split in enumerate(results_test):
         plt.plot(gammas, split)
-    plt.legend(gammas)
+    plt.legend(["Split 1", "Split 2", "Split 3", "Split 4", "Split 5"])
     plt.show()
 
 
