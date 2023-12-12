@@ -53,7 +53,7 @@ model.compile(optimizer=Adam(learning_rate=0.001),
 history = model.fit(train_images, train_labels, epochs=2, validation_data=(val_images, val_labels))
 
 
-#plt.plot(history.history['loss'], label='Train')
+plt.plot(history.history['loss'], label='Train')
 plt.plot(history.history['val_loss'], label='Validation')
 plt.title('Model loss')
 plt.xlabel('Epoch')
