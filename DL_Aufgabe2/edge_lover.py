@@ -27,6 +27,14 @@ def generate_dataset(num_samples=1000):
         images.append(image)
         labels.append(is_vertical)
 
+
+    # Show picture to check
+    plt.imshow(images[0], cmap='gray')
+    plt.title(f"Sample Picture Label: {labels[0]}")
+    plt.axis('off')
+    plt.show()
+
+
     return np.array(images), np.array(labels)
 
 # b) Build the simplest possible CNN
@@ -50,7 +58,7 @@ model.compile(optimizer=Adam(learning_rate=0.001),
               metrics=['accuracy'])
 
 # Train the model
-history = model.fit(train_images, train_labels, epochs=2, validation_data=(val_images, val_labels))
+history = model.fit(train_images, train_labels, epochs=20, validation_data=(val_images, val_labels))
 
 
 plt.plot(history.history['loss'], label='Train')
@@ -69,11 +77,11 @@ plt.ylabel('Accuracy')
 plt.legend()
 plt.show()
 
-'''
+
 # c) Visualize the learned kernel
 weights = model.get_weights()[0]
 plt.figure(figsize=(5, 5))
 plt.imshow(weights[:, :, 0, 0], cmap='gray', interpolation='nearest')
 plt.title('Learned Kernel')
 plt.show()
-'''
+
